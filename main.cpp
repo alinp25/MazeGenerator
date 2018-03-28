@@ -7,17 +7,17 @@
 #include "SDL2/SDL.h"
 #include "Room.h"
 
-#define WIDTH      602
-#define HEIGHT     602
+#define WIDTH      608
+#define HEIGHT     608
 #define ROWS       10
 #define COLUMNS    10
 #define ROOM_WIDTH (WIDTH / ROWS)
-#define FPS        5
+#define FPS        30
 
 using namespace std;
 
 bool unvisitedCells(vector <Room> mazeGrid) {
-  for (int i = 0; i < mazeGrid.size(); i++) {
+  for (Uint32 i = 0; i < mazeGrid.size(); i++) {
     if (!mazeGrid[i].isVisited()) {
       return true;
     }
@@ -102,9 +102,7 @@ int main(int argc, char *argv[]) {
     SDL_RenderClear(renderer);
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-    int next = checkNeighbours(mazeGrid, *current);
-    
-    std::cout << next << "\n";
+    int next = checkNeighbours(mazeGrid, *current);    
     // If the current cell has any neighbours which have not been visited
     if (next != -1) {
       // Choose randomly one of the unvisited neighbours
@@ -118,19 +116,20 @@ int main(int argc, char *argv[]) {
       current->visit();
     } else if (!roomStack.empty()) { // If stack is not empty
       // Pop a cell from the stack
-      // Make it the current cell
-      current = &(roomStack.top());
+      Room &previousRoom = roomStack.top();
       roomStack.pop();
+      // Make it the current cell
+      current = &previousRoom;
     }
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     for (Uint32 i = 0; i < mazeGrid.size(); i++) {
-      if (mazeGrid[i].isVisited()) {
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
-      } else {
+      if (!mazeGrid[i].isVisited()) {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+      } else {
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
       }
       SDL_Rect rect{mazeGrid[i].getX() * ROOM_WIDTH, mazeGrid[i].getY() * ROOM_WIDTH, ROOM_WIDTH, ROOM_WIDTH};
       SDL_RenderFillRect(renderer, &rect);

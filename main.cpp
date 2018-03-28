@@ -7,12 +7,12 @@
 #include "SDL2/SDL.h"
 #include "Room.h"
 
-#define WIDTH      608
-#define HEIGHT     608
-#define ROWS       10
-#define COLUMNS    10
+#define WIDTH      600
+#define HEIGHT     600
+#define ROWS       100
+#define COLUMNS    100
 #define ROOM_WIDTH (WIDTH / ROWS)
-#define FPS        30
+#define FPS        512
 
 using namespace std;
 
@@ -69,13 +69,13 @@ int main(int argc, char *argv[]) {
               << SDL_GetError();
     return 1;
   }
- 
+
   Uint32 starting_tick;
   SDL_Event event;
   bool running = true;
 
   vector < Room > mazeGrid;
-  stack < Room> roomStack;
+  stack < Room* > roomStack;
 
   for (int i = 0; i < ROWS; i++) {
     for (int j = 0; j < COLUMNS; j++) {
@@ -101,14 +101,13 @@ int main(int argc, char *argv[]) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
     int next = checkNeighbours(mazeGrid, *current);    
     // If the current cell has any neighbours which have not been visited
     if (next != -1) {
       // Choose randomly one of the unvisited neighbours
       Room &nextRoom = mazeGrid[next];
       // Push the current cell to the stack
-      roomStack.push(*current);
+      roomStack.push(current);
       // Remove the wall between the current cell and the chosen cell
       current->removeWalls(nextRoom);
       // Make the chosen cell the current cell and mark it as visited
@@ -116,7 +115,7 @@ int main(int argc, char *argv[]) {
       current->visit();
     } else if (!roomStack.empty()) { // If stack is not empty
       // Pop a cell from the stack
-      Room &previousRoom = roomStack.top();
+      Room &previousRoom = *roomStack.top();
       roomStack.pop();
       // Make it the current cell
       current = &previousRoom;
@@ -127,9 +126,9 @@ int main(int argc, char *argv[]) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     for (Uint32 i = 0; i < mazeGrid.size(); i++) {
       if (!mazeGrid[i].isVisited()) {
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
       } else {
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
       }
       SDL_Rect rect{mazeGrid[i].getX() * ROOM_WIDTH, mazeGrid[i].getY() * ROOM_WIDTH, ROOM_WIDTH, ROOM_WIDTH};
       SDL_RenderFillRect(renderer, &rect);
@@ -137,7 +136,7 @@ int main(int argc, char *argv[]) {
       mazeGrid[i].show(renderer);
     }
     
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
+    SDL_SetRenderDrawColor(renderer, 55, 55, 55, SDL_ALPHA_OPAQUE);
     int xCoordHead = current->getX() * ROOM_WIDTH;
     int yCoordHead = current->getY() * ROOM_WIDTH;
     SDL_Rect rect{xCoordHead, yCoordHead, ROOM_WIDTH, ROOM_WIDTH};
